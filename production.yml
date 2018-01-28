@@ -7,6 +7,8 @@ services:
       - ./znc-data:/znc-data
     networks:
       - nginx
+    ports:
+      - "5007:5007" # irc ssl port
 
   letsencrypt:
     image: certbot/certbot
