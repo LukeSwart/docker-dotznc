@@ -8,41 +8,24 @@ services:
     networks:
       - nginx
 
-  # letsencrypt:
-  #   image: certbot/certbot
-  #   entrypoint: "sh"
-  #   volumes:
-  #     - /etc/letsencrypt:/etc/letsencrypt
-  #     - /var/lib/letsencrypt:/var/lib/letsencrypt
-  #     - ./run-letsencrypt.sh:/run-letsencrypt.sh
-  #   networks:
-  #     - nginx
-  #   ports:
-  #     - "80"
-  #     - "443"
-  #   environment:
-  #     - TERM=xterm
-  #     - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS}
-  #     - LETSENCRYPT_DEBUG_MODE=${LETSENCRYPT_DEBUG_MODE}
-  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-  #   command: "/run-letsencrypt.sh"
-
-  # # For local testing only:
-  # nginx:
-  #   image: nginx:stable-alpine
-  #   volumes:
-  #   # don't forget to update nginx.conf here, DOMAINS:
-  #     - ./nginx-envsubst.conf:/etc/nginx/nginx.conf
-  #     - smartercleanup-api:/api
-  #   networks:
-  #     - nginx
-  #   links:
-  #     - smartercleanup-api
-  #   depends_on:
-  #     - smartercleanup-api
-  #   ports:
-  #     - 80:80
-  #   restart: always
+  letsencrypt:
+    image: certbot/certbot
+    entrypoint: "sh"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+      - ./run-letsencrypt.sh:/run-letsencrypt.sh
+    networks:
+      - nginx
+    ports:
+      - "80"
+      - "443"
+    environment:
+      - TERM=xterm
+      - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS}
+      - LETSENCRYPT_DEBUG_MODE=${LETSENCRYPT_DEBUG_MODE}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    command: "/run-letsencrypt.sh"
 
   nginx:
     image: lukeswart/nginx-letsencrypt
@@ -53,10 +36,10 @@ services:
       - ./start-nginx.sh:/start.sh
     links:
       - znc
-      # - letsencrypt
+      - letsencrypt
     depends_on:
       - znc
-      # - letsencrypt
+      - letsencrypt
     networks:
       - nginx
     environment:
@@ -64,7 +47,7 @@ services:
     ports:
       - 80:80
       - 443:443
-    # restart: always
+    restart: always
 
   # Our cron container that runs our letsencrypt container, and reloads our nginx container
   letsencrypt-nginx-cron:
@@ -78,5 +61,4 @@ services:
     command: sh -c "apk add --update tzdata && cp /usr/share/zoneinfo/US/Pacific /etc/localtime && echo 'America/Los_Angeles' > /etc/timezone && date && apk del tzdata && chmod a+x /etc/cron.d/letsencrypt-nginx-cron && touch /var/log/crond.log && crontab /etc/cron.d/letsencrypt-nginx-cron && crond -l 0 -L /var/log/crond.log && echo 'starting nginx-cron' && tail -f /var/log/crond.log"
 
 networks:
-  # znc:
   nginx:
