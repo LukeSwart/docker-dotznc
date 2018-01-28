@@ -1,0 +1,3 @@
+znc-data
+.env
+*-envsubst.conf
